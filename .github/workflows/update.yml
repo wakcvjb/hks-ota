@@ -1,0 +1,29 @@
+name: Build and Publish OTA
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'version.txt'
+      - 'src/**'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run build
+        env:
+          HKS_SIGN_KEY: ${{ secrets.HKS_SIGN_KEY }}
+        run: bash scripts/build.sh
+      - name: Commit and push
+        run: |
+          git config user.name "hks-bot"
+          git config user.email "hks-bot@users.noreply.github.com"
+          git add version.json update.bin pubkey.bin
+          git diff --cached --quiet && exit 0
+          git commit -m "ota: auto build"
+          git push
