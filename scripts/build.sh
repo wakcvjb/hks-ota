@@ -11,6 +11,8 @@ chmod 600 scripts/sign.key
 openssl pkey -in scripts/sign.key -pubout -outform DER | tail -c 32 > pubkey.bin
 openssl pkeyutl -sign -inkey scripts/sign.key -rawin -in update.bin -out update.sig
 SG=$(xxd -p -c 256 update.sig)
+PUBKEY_B64=$(base64 -w 0 pubkey.bin)
 printf '{\n  "version": "%s",\n  "file": "update.bin",\n  "size": %s,\n  "sha512": "%s",\n  "sig": "%s",\n  "pubkey": "",
+  "pubkey": "$PUBKEY_B64",
   "notes": "auto build %s"\n}\n' "$V" "$SZ" "$SH" "$SG" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > version.json
 cat version.json
